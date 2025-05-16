@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startMoney(View view){
-        NayaxFactory.getInstance(this).startReceive(2f, 0.01f);
+        NayaxFactory.getInstance(this).startReceive(0.1f, 0);
     }
 
     public void getMoneyResult(View view){

@@ -124,7 +124,7 @@ public class NayaxService extends Service {
                     float minMoney = intent.getFloatExtra("min_money", 0);
                     if(minMoney <= 0)
                         minMoney = localMinMoney;
-                    startMoney = money;
+                    startMoney = money/minMoney;
                     sendMsg(NayaxCommand.getStartMoney(money, minMoney));//开始收款
                     break;
                 case "get_money"://获取收款金额
@@ -178,7 +178,7 @@ public class NayaxService extends Service {
                 public void getReceiverStr(String str) {
                     if(TextUtils.isEmpty(str))
                         return;
-//                    Log.e("dawn", "receiver = " + str);
+                    Log.e("dawn", "receiver = " + str);
                     switch (currentStatus){
                         case status://查询状态返回结果
                             if(str.length() == 18){
@@ -310,7 +310,7 @@ public class NayaxService extends Service {
      * 发送信息
      */
     private void sendMsg(String msg) {
-//        Log.e("dawn", "sendMsg = " + msg);
+        Log.e("dawn", "sendMsg = " + msg);
         if (serialUtil != null && !TextUtils.isEmpty(msg))
             serialUtil.sendHexMsg(msg);
     }
