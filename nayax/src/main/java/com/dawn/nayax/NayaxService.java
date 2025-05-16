@@ -41,6 +41,7 @@ public class NayaxService extends Service {
     private final static int h_min_money = 0x02; //最小金额
     private final static int h_money = 0x03; //完成收款
     private final static int h_money_delay = 0x04; //收款超时
+    private final static int h_complete_money = 0x05; //完成收款
     @SuppressLint("HandlerLeak")
     private Handler mHandler = new Handler(){
         @Override
@@ -59,6 +60,11 @@ public class NayaxService extends Service {
                 case h_money_delay://收款超时
                     isPaying = false;
                     mHandler.removeMessages(h_money);
+                    break;
+                case h_complete_money://完成收款
+                    isPaying = false;
+                    currentStatus = card_status.complete_money;
+                    sendMsg(NayaxCommand.getCompleteMoney());//完成收款
                     break;
             }
         }
@@ -125,7 +131,8 @@ public class NayaxService extends Service {
                     if(minMoney <= 0)
                         minMoney = localMinMoney;
                     startMoney = money/minMoney;
-                    sendMsg(NayaxCommand.getStartMoney(money, minMoney));//开始收款
+                    Log.i("dawn", "startMoney = " + startMoney + "   minMoney = " + minMoney);
+                    sendMsg(NayaxCommand.getStartMoney(startMoney, minMoney));//开始收款
                     break;
                 case "get_money"://获取收款金额
                     currentStatus = card_status.money;
@@ -134,6 +141,9 @@ public class NayaxService extends Service {
                 case "get_cancel_money"://取消收款
                     currentStatus = card_status.cancel_money;
                     sendMsg(NayaxCommand.getCancelMoney());//取消收款
+                    isPaying = false;
+                    mHandler.removeMessages(h_money);
+                    mHandler.removeMessages(h_money_delay);
                     break;
                 case "get_complete_money"://完成收款
                     currentStatus = card_status.complete_money;
@@ -228,9 +238,10 @@ public class NayaxService extends Service {
                                         if(listener != null)
                                             listener.getMoney(type, multiple * localMinMoney);
                                         Log.i("dawn", "multiple = " + multiple + "   localMinMoney = " + localMinMoney + "   startMoney = " + startMoney);
+                                        mHandler.removeMessages(h_money);
+                                        mHandler.removeMessages(h_money_delay);
                                         // 收款和支付金额相同，完成收款
-                                        currentStatus = card_status.complete_money;
-                                        sendMsg(NayaxCommand.getCompleteMoney());//完成收款
+                                        cycleCompleteMoney();
                                     }
                                 }catch (Exception e){
                                     e.printStackTrace();
@@ -243,9 +254,6 @@ public class NayaxService extends Service {
                                 NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
                                 if(listener != null)
                                     listener.getCompleteMoney(receiverMoney);
-                                isPaying = false;
-                                mHandler.removeMessages(h_money);
-                                mHandler.removeMessages(h_money_delay);
                             }
                             break;
                         case cancel_money://取消收款
@@ -304,6 +312,11 @@ public class NayaxService extends Service {
         currentStatus = card_status.money;
         sendMsg(NayaxCommand.getMoney());//获取收款金额
         mHandler.sendEmptyMessageDelayed(h_money, 2000);
+    }
+
+    private void cycleCompleteMoney(){
+        mHandler.removeMessages(h_complete_money);
+        mHandler.sendEmptyMessageDelayed(h_complete_money, 3000);
     }
 
     /**
