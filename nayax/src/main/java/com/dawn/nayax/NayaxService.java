@@ -130,9 +130,9 @@ public class NayaxService extends Service {
                     float minMoney = intent.getFloatExtra("min_money", 0);
                     if(minMoney <= 0)
                         minMoney = localMinMoney;
-                    startMoney = money/minMoney;
+                    startMoney = money;
                     Log.i("dawn", "startMoney = " + startMoney + "   minMoney = " + minMoney);
-                    sendMsg(NayaxCommand.getStartMoney(startMoney, minMoney));//开始收款
+                    sendMsg(NayaxCommand.getStartMoney(money, minMoney));//开始收款
                     break;
                 case "get_money"://获取收款金额
                     currentStatus = card_status.money;
@@ -232,8 +232,9 @@ public class NayaxService extends Service {
                                 try{
                                     String type = str.substring(6, 8);//支付方式
                                     int multiple = Integer.parseInt(str.substring(8, 14), 16);//最小金额的倍数
-                                    if(startMoney <= (multiple * localMinMoney)){
-                                        receiverMoney = multiple * localMinMoney;
+                                    Log.i("dawn", "multiple = " + multiple + "   receiver " + localMinMoney * multiple + " round " + Math.round(multiple * localMinMoney * 100) + "   startMoney = " + startMoney);
+                                    if(Math.round(startMoney * 100) <= Math.round(multiple * localMinMoney * 100)){
+                                        receiverMoney = startMoney;
                                         NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
                                         if(listener != null)
                                             listener.getMoney(type, multiple * localMinMoney);
