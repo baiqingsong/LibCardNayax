@@ -40,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void getCompleteMoney() {
+            public void getCompleteMoney(float receiverMoney) {
                 Log.e("dawn", "getCompleteMoney");
             }
 

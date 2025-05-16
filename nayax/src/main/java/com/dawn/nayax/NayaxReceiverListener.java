@@ -8,7 +8,7 @@ public interface NayaxReceiverListener {
     void getMinMoney(float minMoney);//获取最小金额
     void getStartMoney();//开始收款
     void getMoney(String type, float multiple);//获取收款金额(支付方式,最小金额的倍数)
-    void getCompleteMoney();//完成收款
+    void getCompleteMoney(float receiverMoney);//完成收款
     void getCancelMoney();//取消收款
     void getSaleResult(boolean isSuccess);//售卖结果
 }

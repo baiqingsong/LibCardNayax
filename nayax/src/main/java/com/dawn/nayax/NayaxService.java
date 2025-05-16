@@ -122,6 +122,8 @@ public class NayaxService extends Service {
                     currentStatus = card_status.start_money;
                     float money = intent.getFloatExtra("money", 0);
                     float minMoney = intent.getFloatExtra("min_money", 0);
+                    if(minMoney <= 0)
+                        minMoney = localMinMoney;
                     startMoney = money;
                     sendMsg(NayaxCommand.getStartMoney(money, minMoney));//开始收款
                     break;
@@ -148,6 +150,7 @@ public class NayaxService extends Service {
     }
     private float localMinMoney = 0;//最小金额
     private float startMoney = 0;//开始金额
+    private float receiverMoney = 0;//收款金额
     private boolean isPaying = false;//是否正在收款
     /**
      * 开启串口
@@ -220,6 +223,7 @@ public class NayaxService extends Service {
                                     String type = str.substring(6, 8);//支付方式
                                     int multiple = Integer.parseInt(str.substring(8, 14), 16);//最小金额的倍数
                                     if(startMoney <= (multiple * localMinMoney)){
+                                        receiverMoney = multiple * localMinMoney;
                                         NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
                                         if(listener != null)
                                             listener.getMoney(type, multiple * localMinMoney);
@@ -238,7 +242,7 @@ public class NayaxService extends Service {
                             if("E106100100010B6A".equals(str)){
                                 NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
                                 if(listener != null)
-                                    listener.getCompleteMoney();
+                                    listener.getCompleteMoney(receiverMoney);
                                 isPaying = false;
                                 mHandler.removeMessages(h_money);
                                 mHandler.removeMessages(h_money_delay);
