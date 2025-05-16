@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void getMoney(String type, int multiple) {
+            public void getMoney(String type, float multiple) {
                 Log.e("dawn", "getMoney type = " + type + ", multiple = " + multiple);
             }
 
@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startPort(View view){
-        NayaxFactory.getInstance(this).startPort(1);
+        NayaxFactory.getInstance(this).startPort(3, true);
     }
 
     public void getDeviceStatus(View view){

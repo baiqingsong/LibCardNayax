@@ -32,10 +32,11 @@ public class NayaxFactory {
     /**
      * 开启串口
      */
-    public void startPort(int port) {
+    public void startPort(int port, boolean autoCheckStatus) {
         Intent intent = new Intent(NayaxService.RECEIVER_NAYAX);
         intent.putExtra("command", "start_port");
         intent.putExtra("port", port);
+        intent.putExtra("auto_check_status", autoCheckStatus);
         mContext.sendBroadcast(intent);
     }
 
