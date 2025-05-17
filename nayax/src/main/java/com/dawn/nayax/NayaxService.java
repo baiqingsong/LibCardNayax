@@ -109,7 +109,7 @@ public class NayaxService extends Service {
                 return;
             switch (command){
                 case "start_port":
-                    int port = intent.getIntExtra("port", 1);
+                    int port = intent.getIntExtra("port", 3);
                     autoCheckStatus = intent.getBooleanExtra("auto_check_status", false);
                     startPort(port);
                     break;
