@@ -84,8 +84,6 @@ public class NayaxService extends Service {
             unregisterReceiver(mReceiver);
     }
 
-    private boolean autoCheckStatus = false;
-
     /**
      * 注册广播
      */
@@ -110,7 +108,6 @@ public class NayaxService extends Service {
             switch (command){
                 case "start_port":
                     int port = intent.getIntExtra("port", 3);
-                    autoCheckStatus = intent.getBooleanExtra("auto_check_status", false);
                     startPort(port);
                     break;
                 case "get_device_status"://获取mdb设备状态
@@ -127,12 +124,9 @@ public class NayaxService extends Service {
                     isPaying = true;
                     currentStatus = card_status.start_money;
                     float money = intent.getFloatExtra("money", 0);
-                    float minMoney = intent.getFloatExtra("min_money", 0);
-                    if(minMoney <= 0)
-                        minMoney = localMinMoney;
                     startMoney = money;
-                    Log.i("dawn", "startMoney = " + startMoney + "   minMoney = " + minMoney);
-                    sendMsg(NayaxCommand.getStartMoney(money, minMoney));//开始收款
+                    Log.i("dawn", "startMoney = " + startMoney);
+                    sendMsg(NayaxCommand.getStartMoney(money, localMinMoney));//开始收款
                     break;
                 case "get_money"://获取收款金额
                     currentStatus = card_status.money;
@@ -162,6 +156,9 @@ public class NayaxService extends Service {
     private float startMoney = 0;//开始金额
     private float receiverMoney = 0;//收款金额
     private boolean isPaying = false;//是否正在收款
+    private String version;
+    private String type;
+    private String moneyNo;
     /**
      * 开启串口
      * @param port 串口号
@@ -193,13 +190,13 @@ public class NayaxService extends Service {
                         case status://查询状态返回结果
                             if(str.length() == 18){
                                 mHandler.removeMessages(h_status);
-                                String version = str.substring(6, 8);//控制板版本
-                                String type = str.substring(8, 10);//外设机器种类
-                                String moneyNo = str.substring(10, 14);//货币代码
+                                version = str.substring(6, 8);//控制板版本
+                                type = str.substring(8, 10);//外设机器种类
+                                moneyNo = str.substring(10, 14);//货币代码
                                 cycleGetMinMoney();
-                                NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
-                                if(listener != null)
-                                    listener.getDeviceStatus(version, type, moneyNo);
+//                                NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
+//                                if(listener != null)
+//                                    listener.getDeviceStatus(version, type, moneyNo);
                             }
                             break;
                         case min_money://查询最小金额返回结果
@@ -211,8 +208,10 @@ public class NayaxService extends Service {
                                     float minMoney = (float) (moneyBase / Math.pow(10, moneyPoint));//最小金额
                                     localMinMoney = minMoney;
                                     NayaxReceiverListener listener = NayaxFactory.getInstance(NayaxService.this).getListener();
+//                                    if(listener != null)
+//                                        listener.getMinMoney(minMoney);
                                     if(listener != null)
-                                        listener.getMinMoney(minMoney);
+                                        listener.getDeviceStatus(version, type, moneyNo, minMoney);
                                 }catch (Exception e){
                                     e.printStackTrace();
                                 }
@@ -277,9 +276,8 @@ public class NayaxService extends Service {
                     }
                 }
             });
-            if(autoCheckStatus){
-                mHandler.sendEmptyMessageDelayed(h_status, 3000);
-            }
+
+            mHandler.sendEmptyMessageDelayed(h_status, 3000);
         }
     }
 
@@ -287,12 +285,10 @@ public class NayaxService extends Service {
      * 获取设备状态
      */
     private void cycleGetStatus(){
-        if(autoCheckStatus){
-            mHandler.removeMessages(h_status);
-            currentStatus = card_status.status;
-            sendMsg(NayaxCommand.getMDBCommand());//获取MDB设备状态
-            mHandler.sendEmptyMessageDelayed(h_status, 5000);
-        }
+        mHandler.removeMessages(h_status);
+        currentStatus = card_status.status;
+        sendMsg(NayaxCommand.getMDBCommand());//获取MDB设备状态
+        mHandler.sendEmptyMessageDelayed(h_status, 5000);
     }
 
     /**

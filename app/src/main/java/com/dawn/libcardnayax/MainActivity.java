@@ -19,14 +19,10 @@ public class MainActivity extends AppCompatActivity {
 //        String crc = NayaxCommand.getStartMoney(1,  0.01f);
 //        Log.e("dawn", "crc = " + crc);
         NayaxFactory.getInstance(this).setListener(new NayaxReceiverListener() {
-            @Override
-            public void getDeviceStatus(String version, String type, String moneyNo) {
-                Log.e("dawn", "getDeviceStatus version = " + version + ", type = " + type + ", moneyNo = " + moneyNo);
-            }
 
             @Override
-            public void getMinMoney(float minMoney) {
-                Log.e("dawn", "getMinMoney minMoney = " + minMoney);
+            public void getDeviceStatus(String version, String type, String moneyNo, float minMoney) {
+                Log.e("dawn", "getDeviceStatus version = " + version + ", type = " + type + ", moneyNo = " + moneyNo + ", minMoney = " + minMoney);
             }
 
             @Override
@@ -57,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startPort(View view){
-        NayaxFactory.getInstance(this).startPort(3, true);
+        NayaxFactory.getInstance(this).startService(3);
     }
 
     public void getDeviceStatus(View view){
@@ -69,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startMoney(View view){
-        NayaxFactory.getInstance(this).startReceive(0.2f, 0);
+        NayaxFactory.getInstance(this).startReceive(0.2f);
     }
 
     public void getMoneyResult(View view){

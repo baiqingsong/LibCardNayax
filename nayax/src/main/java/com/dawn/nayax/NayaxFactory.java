@@ -2,6 +2,8 @@ package com.dawn.nayax;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Message;
 
 public class NayaxFactory {
     //单例模式
@@ -9,7 +11,6 @@ public class NayaxFactory {
     private Context mContext;
     private NayaxFactory(Context context){
         this.mContext = context;
-        context.startService(new Intent(context, NayaxService.class));
     }
     public static NayaxFactory getInstance(Context context){
         if(instance == null){
@@ -29,14 +30,36 @@ public class NayaxFactory {
         this.mNayaxReceiverListener = listener;
     }
 
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            super.handleMessage(msg);
+            switch (msg.what){
+                case 0:
+                    startPort();
+                    break;
+            }
+        }
+    };
+    private int serialPort = 0;//串口号
+
+    /**
+     * 开启服务
+     * @param port 串口号
+     */
+    public void startService(int port){
+        serialPort = port;
+        mContext.startService(new Intent(mContext, NayaxService.class));
+        mHandler.sendEmptyMessageDelayed(0, 5000);
+    }
+
     /**
      * 开启串口
      */
-    public void startPort(int port, boolean autoCheckStatus) {
+    public void startPort() {
         Intent intent = new Intent(NayaxService.RECEIVER_NAYAX);
         intent.putExtra("command", "start_port");
-        intent.putExtra("port", port);
-        intent.putExtra("auto_check_status", autoCheckStatus);
+        intent.putExtra("port", serialPort);
         mContext.sendBroadcast(intent);
     }
 
@@ -61,11 +84,10 @@ public class NayaxFactory {
     /**
      * 发起收款
      */
-    public void startReceive(float money, float minMoney) {
+    public void startReceive(float money) {
         Intent intent = new Intent(NayaxService.RECEIVER_NAYAX);
         intent.putExtra("command", "start_money");
         intent.putExtra("money", money);
-        intent.putExtra("min_money", minMoney);
         mContext.sendBroadcast(intent);
     }
 
