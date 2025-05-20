@@ -10,6 +10,8 @@ import com.dawn.nayax.NayaxCommand;
 import com.dawn.nayax.NayaxFactory;
 import com.dawn.nayax.NayaxReceiverListener;
 
+import java.util.Random;
+
 public class MainActivity extends AppCompatActivity {
 
     @Override
@@ -65,7 +67,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startMoney(View view){
-        NayaxFactory.getInstance(this).startReceive(0.2f);
+        Random random = new Random();
+        // 生成 0.01 到 2.01 之间的随机数
+        float randomFloat = 0.01f + random.nextFloat() * (2.01f - 0.01f);
+        // 保留两位小数
+        randomFloat = Math.round(randomFloat * 100) / 100.0f;
+        Log.i("TAG", "startMoney: " + randomFloat);
+
+        NayaxFactory.getInstance(this).startReceive(randomFloat);
     }
 
     public void getMoneyResult(View view){

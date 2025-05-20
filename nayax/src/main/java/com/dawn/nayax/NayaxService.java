@@ -223,7 +223,7 @@ public class NayaxService extends Service {
                                 if(listener != null)
                                     listener.getStartMoney();
                                 mHandler.sendEmptyMessageDelayed(h_money, 3000);
-                                mHandler.sendEmptyMessageDelayed(h_money_delay, 30 * 1000);
+                                mHandler.sendEmptyMessageDelayed(h_money_delay, 90 * 1000);
                             }
                             break;
                         case money://获取收款金额
