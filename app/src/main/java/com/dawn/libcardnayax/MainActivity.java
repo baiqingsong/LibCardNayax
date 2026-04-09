@@ -6,90 +6,105 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
-import com.dawn.nayax.NayaxCommand;
-import com.dawn.nayax.NayaxFactory;
-import com.dawn.nayax.NayaxReceiverListener;
+import com.dawn.nayax.NayaxCallback;
+import com.dawn.nayax.NayaxManager;
 
 import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String TAG = "MainActivity";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-//        String crc = NayaxCommand.getStartMoney(1,  0.01f);
-//        Log.e("dawn", "crc = " + crc);
-        NayaxFactory.getInstance(this).setListener(new NayaxReceiverListener() {
 
+        NayaxManager.getInstance().setCallback(new NayaxCallback() {
             @Override
-            public void getDeviceStatus(String version, String type, String moneyNo, float minMoney) {
-                Log.e("dawn", "getDeviceStatus version = " + version + ", type = " + type + ", moneyNo = " + moneyNo + ", minMoney = " + minMoney);
+            public void onDeviceReady(String version, String deviceType, String currencyCode, float minAmount) {
+                Log.i(TAG, "设备就绪: version=" + version + " type=" + deviceType
+                        + " currency=" + currencyCode + " minAmount=" + minAmount);
             }
 
             @Override
-            public void getStartMoney() {
-                Log.e("dawn", "getStartMoney");
+            public void onPaymentStarted() {
+                Log.i(TAG, "收款已发起");
             }
 
             @Override
-            public void getMoney(String type, float multiple) {
-                Log.e("dawn", "getMoney type = " + type + ", multiple = " + multiple);
+            public void onPaymentReceived(String payType, float amount) {
+                Log.i(TAG, "收到付款: type=" + payType + " amount=" + amount);
             }
 
             @Override
-            public void getCompleteMoney(float receiverMoney) {
-                Log.e("dawn", "getCompleteMoney");
+            public void onPaymentCompleted(float amount) {
+                Log.i(TAG, "收款完成: " + amount);
             }
 
             @Override
-            public void getCancelMoney() {
-                Log.e("dawn", "getCancelMoney");
+            public void onPaymentCancelled() {
+                Log.i(TAG, "收款已取消");
             }
 
             @Override
-            public void getSaleResult(boolean isSuccess) {
-                Log.e("dawn", "getSaleResult isSuccess = " + isSuccess);
+            public void onSaleResult(boolean success) {
+                Log.i(TAG, "售卖结果: " + success);
+            }
+
+            @Override
+            public void onError(int errorCode, String message) {
+                Log.e(TAG, "错误[" + errorCode + "]: " + message);
+            }
+
+            @Override
+            public void onConnectionChanged(boolean connected) {
+                Log.i(TAG, "连接状态: " + connected);
             }
         });
     }
 
-    public void startPort(View view){
-        NayaxFactory.getInstance(this).startService(3);
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        NayaxManager.getInstance().release();
     }
 
-    public void getDeviceStatus(View view){
-        NayaxFactory.getInstance(this).getDeviceStatus();
+    public void startPort(View view) {
+        NayaxManager.getInstance().connect(3);
     }
 
-    public void getMinMoney(View view){
-        NayaxFactory.getInstance(this).getMinMoney();
+    public void getDeviceStatus(View view) {
+        NayaxManager.getInstance().queryDeviceInfo();
     }
 
-    public void startMoney(View view){
+    public void getMinMoney(View view) {
+        // 最小面额在连接时自动查询，此处手动重新查询
+        NayaxManager.getInstance().queryDeviceInfo();
+    }
+
+    public void startMoney(View view) {
         Random random = new Random();
-        // 生成 0.01 到 2.01 之间的随机数
-        float randomFloat = 0.01f + random.nextFloat() * (2.01f - 0.01f);
-        // 保留两位小数
+        float randomFloat = 0.01f + random.nextFloat() * 2.0f;
         randomFloat = Math.round(randomFloat * 100) / 100.0f;
-        Log.i("TAG", "startMoney: " + randomFloat);
-
-        NayaxFactory.getInstance(this).startReceive(randomFloat);
+        Log.i(TAG, "发起收款: " + randomFloat);
+        NayaxManager.getInstance().startPayment(randomFloat);
     }
 
-    public void getMoneyResult(View view){
-        NayaxFactory.getInstance(this).getMoney();
+    public void getMoneyResult(View view) {
+        // 收款轮询现在自动进行
+        Log.i(TAG, "收款状态: paying=" + NayaxManager.getInstance().isPaying());
     }
 
-    public void getCompleteMoney(View view){
-        NayaxFactory.getInstance(this).getCompleteMoney();
+    public void getCompleteMoney(View view) {
+        NayaxManager.getInstance().confirmPayment();
     }
 
-    public void getCancelMoney(View view){
-        NayaxFactory.getInstance(this).getCancelMoney();
+    public void getCancelMoney(View view) {
+        NayaxManager.getInstance().cancelPayment();
     }
 
-    public void setSaleResult(View view){
-        NayaxFactory.getInstance(this).setSaleResult();
+    public void setSaleResult(View view) {
+        NayaxManager.getInstance().reportSaleResult();
     }
 }
